@@ -42,15 +42,15 @@ MainWindow::MainWindow(QWidget *parent) :
             QByteArray temp = tcpClient->readAll();
             if(temp == "GET_DATA")
             {
-                qDebug()<<PID<<"Get Data";
                 SETSTART
+                tcpClient->write(QString::number(PID).toUtf8());
+                SETPOINT
                 tcpClient->write(getIPtoUtf8());
                 SETPOINT
                 tcpClient->write(getPorttoUtf8());
                 SETPOINT
                 tcpClient->write("connecting");
                 SETEND
-                qDebug()<<PID<<"Send Data";
             }
             else
                 ui->textBrowser->append(temp);
