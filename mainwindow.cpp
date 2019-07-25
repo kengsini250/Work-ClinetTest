@@ -14,6 +14,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->ipAddress->setText("127.0.0.1");
     ui->Port->setText("55555");
 
+    QHostInfo info = QHostInfo::fromName(QHostInfo::localHostName());
+    hostaddress = info.addresses().first();
+
     tcpClient = new QTcpSocket(this);
     tcpClient->abort();
     connect(ui->Ok,&QAbstractButton::clicked,[=]{
@@ -29,9 +32,10 @@ MainWindow::MainWindow(QWidget *parent) :
         if(tcpClient->state()==QTcpSocket::ConnectedState)
         {
             ui->Ok->setDisabled(true);
+            ui->textBrowser->append("my IP address : "+ hostaddress.toString());
             ui->textBrowser->append(QString::number(port));
             ui->textBrowser->append("connected!");
-            //send PID
+            //send PID to Display
             tcpClient->write(QString::number(PID).toUtf8());
         }
     });
@@ -42,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
             QByteArray temp = tcpClient->readAll();
             if(temp == "GET_DATA")
             {
+                ui->textBrowser->append("\nGet Server Data !");
                 SETSTART
                 tcpClient->write(QString::number(PID).toUtf8());
                 SETPOINT
@@ -51,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 SETPOINT
                 tcpClient->write("connecting");
                 SETEND
+                ui->textBrowser->append("send data to Server !\n");
             }
             else
                 ui->textBrowser->append(temp);
@@ -71,8 +77,7 @@ MainWindow::~MainWindow()
 
 QByteArray MainWindow::getIPtoUtf8()
 {
-    QHostAddress myip = tcpClient->peerAddress();
-    return myip.toString().toUtf8();
+    return hostaddress.toString().toUtf8();
 }
 
 QByteArray MainWindow::getPorttoUtf8()
